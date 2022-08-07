@@ -246,6 +246,41 @@ struct disjoint_set{
 };
 
 
+// make a tree clean but usually there is no need as this would require a complete bfs, try to think other way
+void cleaner(vector<vector<int>> &v, vector<int>& par, int n){
+    queue<int> q;
+    q.push(1);
+    par[1]=1;
+    vector<bool> visited(n+1, 0);
+    while(q.empty()!=1){
+        int cur= q.front();
+        q.pop();
+        visited[cur]=1;
+        for(int i=0; i<v[cur].size(); i++){
+            int j= v[cur][i]; 
+            if(!visited[j]){
+                par[j]=cur;
+                q.push(j);
+            }
+        }
+    }
+}
+
+// this dfs find depth of a particular node as well as size of the subtree attached to a particular node
+ll depthu_and_sizeu(ll cur, vector<bool>& visited, ll depth, vector<vector<ll>> &v, vector<ll>& dpt, vector<ll>& st){
+    visited[cur]=1;
+    dpt[cur]= depth;
+    for(int i=0; i<v[cur].size(); i++){
+        ll j= v[cur][i];
+        if(!visited[j]){
+            st[cur]+= depthu_and_sizeu(j, visited, depth+1, v, dpt, st);
+        }
+    }
+    return st[cur];
+} 
+
+
+
 
 
 //PRIYANSH LAZY SEGMENT TREE TEMPLATE COULD BE USEFULL IN THE FUTURE
@@ -399,6 +434,76 @@ int query(int l, int r){  // sum on interval [l, r) not [l, r], r is excluded he
 }
 
 
+
+struct fwt{
+    int n; vector<int> bit;
+    fwt(int k){
+        n=k;
+        bit.resize(k+1, 0);
+    }
+    void update(int start, int diff){ //diff with what was already there in original array
+        if(start==0) return;
+        while(start<=n){
+            bit[start]+= diff;
+            start+= start&(-1*start);
+        }
+    }
+    // remember i&(-i) gives us last set bit
+    int prefix(int pos){
+        int sum=0;
+        while(pos>0){
+            sum+= bit[pos];
+            pos-= pos& (-1*pos);
+        }
+        return sum;
+    }
+    int query(int l, int r){
+        return prefix(r)-prefix(l-1);
+    }
+}
+
+
+//DUAL SEGMENT TREE
+struct dual_segment_tree{
+    int N;
+    vector<T> ST;
+    dual_segment_tree(vector<T> A){
+        int n=A.size();
+        N = 1;
+        while(N<n){
+            N*=2;
+        }
+        ST=vector<T>(N*2-1,0);
+        for (int i=0; i<n; i++){
+            ST[N-1+i]= A[i];
+        }
+    }
+    T operator [](int k){
+        k+=N-1;
+        T ans=ST[k];
+        while(k > 0){
+            k=(k-1)/2;
+            ans+=ST[k];
+        }
+        return ans;
+    }
+    void range_add(int L, int R, T x, int i, int l, int r){
+        if(R<=l || r<=L){
+            return;
+        } else if (L<=l && r<=R){
+            ST[i] += x;
+            return;
+        } else {
+            int m= (l+r)/2;
+            range_add(L, R, x, i*2+1, l, m);
+            range_add(L, R, x, i*2+2, m, r);
+            return;
+        }
+    }
+    void range_add(int L, int R, T x){
+        range_add(L, R, x, 0, 0, N);
+    }
+};
 
 
 
