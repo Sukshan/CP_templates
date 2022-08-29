@@ -246,7 +246,7 @@ struct disjoint_set{
 };
 
 
-// make a tree clean but usually there is no need as this would require a complete bfs, try to think other way
+// make a tree clean but usually there is no need as this would require a complete bfs, try to think of other way
 void cleaner(vector<vector<int>> &v, vector<int>& par, int n){
     queue<int> q;
     q.push(1);
@@ -283,7 +283,7 @@ ll depthu_and_sizeu(ll cur, vector<bool>& visited, ll depth, vector<vector<ll>> 
 
 
 
-//PRIYANSH LAZY SEGMENT TREE TEMPLATE COULD BE USEFULL IN THE FUTURE
+//LAZY SEGMENT TREE TEMPLATE 
 template<typename Node, typename Update>
 struct LazySGT {
     vector<Node> tree;
@@ -405,7 +405,7 @@ struct Update1 {
 
 
 
-//DESI SEGMENT TREE 
+//iterative segment tree implementation
 const int Nn = 1e5;  // limit for array size
 int seg_n;  // array size
 int t[2 * Nn];
