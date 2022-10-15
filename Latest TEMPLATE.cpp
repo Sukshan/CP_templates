@@ -1,3 +1,4 @@
+#include <bits/stdc++.h>
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -19,7 +20,7 @@
 #include "ext/pb_ds/tree_policy.hpp"
 using namespace std;
 using namespace __gnu_pbds;
-
+using namespace std::chrono;
 
 
 // ORDERED SET PBDS ( USE less<T> after null type for set and    less_equal<T> for multiset)
@@ -246,7 +247,7 @@ struct disjoint_set{
 };
 
 
-// make a tree clean but usually there is no need as this would require a complete bfs, try to think of other way
+// make a tree clean but usually there is no need as this would require a complete bfs, try to think other way
 void cleaner(vector<vector<int>> &v, vector<int>& par, int n){
     queue<int> q;
     q.push(1);
@@ -283,7 +284,7 @@ ll depthu_and_sizeu(ll cur, vector<bool>& visited, ll depth, vector<vector<ll>> 
 
 
 
-//LAZY SEGMENT TREE TEMPLATE 
+//PRIYANSH LAZY SEGMENT TREE TEMPLATE COULD BE USEFULL IN THE FUTURE
 template<typename Node, typename Update>
 struct LazySGT {
     vector<Node> tree;
@@ -405,32 +406,46 @@ struct Update1 {
 
 
 
-//iterative segment tree implementation
-const int Nn = 1e5;  // limit for array size
-int seg_n;  // array size
-int t[2 * Nn];
-void build(){  // build the tree
-    for (int i = seg_n -1; i > 0; --i) t[i] = t[i<<1] + t[i<<1|1];  
-    //array is inputed on the right side and tree is constructed on the left side
-}
-void modify(int p, int value){  // set value at position p
-    p=p+seg_n;  t[p]= value; //first set the value at that position 
-    for (; p > 1; p= p>>1){
-        t[p>>1] = t[p] + t[p^1];
+struct seg_tree{
+    int n, nextpot; 
+    vector<int> seg_t;
+    seg_tree(int k){
+        n=k; 
+        nextpot= pow(2, ceil((double)log2(k)));
+        seg_t.resize(2*nextpot+10);
     }
-}
-int query(int l, int r){  // sum on interval [l, r) not [l, r], r is excluded here
-    int res = 0;
-    l=l+seg_n, r=r+seg_n;
-    for( ; l<r; l=l>>1, r=r>>1){
-        if(l&1){
-            res+=t[l++];
-        }
-        if(r&1){
-            res+=t[--r];
+    void take_intput(int size){
+        for(int i=nextpot, j=1; j<=size; j++, i++) cin>>seg_t[i];
+    }
+    void build(){
+        for(int i=2*nextpot-1; i>1; i-=2){
+            seg_t[i/2]= max(seg_t[i], seg_t[i-1]);
         }
     }
-    return res;
+    void update(int position, int value){
+        position+= nextpot-1;
+        seg_t[position]=value;
+        while(position!=1){
+            seg_t[position/2]= max(seg_t[position], position&1? seg_t[position-1]: seg_t[position+1]);
+            position/=2;
+        }
+    }
+    void query(int query_l, int query_r, int cur_node, int cur_node_l, int cur_node_r, int &value){
+
+        if(cur_node_l > query_r or cur_node_r < query_l ) return;
+
+        if(cur_node_l>=query_l and cur_node_r<= query_r){
+            value= max(value, seg_t[cur_node]);
+            return;
+        }
+        else{
+            int len= cur_node_r - cur_node_l +1;
+            query(query_l, query_r, cur_node*2, cur_node_l, cur_node_l + len/2 -1, value);
+
+            query(query_l, query_r, cur_node*2+1, cur_node_l+ len/2, cur_node_r, value);
+        }
+        return;
+    }
 }
 
 
@@ -507,12 +522,52 @@ struct dual_segment_tree{
 
 
 
+boo rabin_miller_helper(ll base, ll n, ll d){
+    ll x= expo_mania(base, d, n);
+    if(x==1 or x==n-1) return true;
+
+    while(d!=n-1){
+        d*=2;
+        x= (x*x)%n;
+        if(x==1) return false;
+        if(x==n-1) return true;
+    }
+}
+
+bool rabin_miller_primality_test(ll n){
+    if(n<=1 or (n%2==0 and n!=2)){ return false; }
+
+    vector<ll> base= {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+    for(int i=0; i<10; i--){
+        if(n== base[i]) return true;
+    }
+
+    ll d= n-1;
+    while(d%2==0) d/=2;
+
+    for(int i=0; i<10; i++){
+        if(rabin_miller_helper(base[i], n, d) == false) return false; //its composite
+    }
+    return true; // its prime
+
+}
+
 
 
 int main() {
     GODSPEED_SPIDERMAN;
+    auto start= high_resolution_clock::now();
+
+
     OH_oh(t);
     // DRIVER FUNTION
     pair<ll, ll> kk= extended_gcd(6, 7);
     cout<<kk.first<<" "<<kk.second<<endl;
+
+
+    auto stop= high_resolution_clock::now();
+
+    auto duration= duration_cast<microseconds>(stop-start);
+    cout<<duration.count()<<endl;
+
 }   
